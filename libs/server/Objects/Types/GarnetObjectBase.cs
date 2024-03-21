@@ -18,10 +18,8 @@ namespace Garnet.server
         int serializationState;
         byte[] serialized;
 
-        /// <summary>
-        /// Type of object
-        /// </summary>
-        protected abstract byte Type { get; }
+        /// <inheritdoc />
+        public abstract byte Type { get; }
 
         /// <inheritdoc />
         public long Expiration { get; set; }
@@ -111,7 +109,6 @@ namespace Garnet.server
         /// </summary>
         public virtual void DoSerialize(BinaryWriter writer)
         {
-            writer.Write(Type);
             writer.Write(Expiration);
         }
 
