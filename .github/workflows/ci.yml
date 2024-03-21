@@ -2,19 +2,9 @@ name: Garnet .NET CI
 on:
   workflow_dispatch:
   push:
-    paths-ignore:
-      - 'website/**'
-      - '**/*.md'
-      - '.github'
-      - '.azure'
     branches:
       - main
   pull_request:
-    paths-ignore:
-      - 'website/**'
-      - '**/*.md'
-      - '.github'
-      - '.azure'
     branches:
       - main
   
@@ -23,8 +13,28 @@ env:
   DOTNET_NOLOGO: true
 
 jobs:
+
+  website:
+    name: Check if website code changed  # no need to run unit tests then
+    runs-on: ubuntu-latest  
+    permissions:
+      pull-requests: read
+      contents: read
+    outputs:
+      website: ${{ steps.filter.outputs.website }}
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+    - name: Check if Website changed
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          website:
+            - 'website/**'
+
   changes:
-    name: Check if changes to Tsavorite code
+    name: Check if Tsavorite code changed
     runs-on: ubuntu-latest  # don't need matrix to test where the changes were made in code
     permissions:
       pull-requests: read
@@ -50,6 +60,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         framework: [ 'net6.0', 'net8.0' ]
+    if: needs.website.outputs.website == 'false'   
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -79,7 +90,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         framework: [ 'net6.0', 'net8.0' ]
-    if: needs.changes.outputs.tsavorite == 'true'   
+    if: needs.changes.outputs.tsavorite == 'true' && needs.website.outputs.website == 'false'
     steps:
       - name: Check out code
         uses: actions/checkout@v4
